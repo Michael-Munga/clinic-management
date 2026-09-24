@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Root Menu -->
+    <menuitem id="menu_clinic_root"
+              name="Clinic"/>
+
+    <!-- Main Menus -->
+    <menuitem id="menu_clinic_patients"
+              name="Patients"
+              parent="menu_clinic_root"
+              action="action_clinic_patient"
+              sequence="10"/>
+
+    <menuitem id="menu_clinic_doctors"
+              name="Doctors"
+              parent="menu_clinic_root"
+              action="action_clinic_doctor"
+              sequence="20"/>
+
+    <!-- Configuration Menu -->
+    <menuitem id="menu_clinic_config"
+              name="Configuration"
+              parent="menu_clinic_root"
+              sequence="100"/>
+
+    <!-- Configuration Submenus -->
+    <menuitem id="menu_clinic_specialties"
+              name="Specialties"
+              parent="menu_clinic_config"
+              action="action_clinic_specialty"/>
+
+</odoo>

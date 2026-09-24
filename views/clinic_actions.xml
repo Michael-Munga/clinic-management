@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action for Patients -->
+    <record id="action_clinic_patient" model="ir.actions.act_window">
+        <field name="name">Patients</field>
+        <field name="res_model">clinic.patient</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Action for Doctors -->
+    <record id="action_clinic_doctor" model="ir.actions.act_window">
+        <field name="name">Doctors</field>
+        <field name="res_model">clinic.doctor</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Action for Specialties -->
+    <record id="action_clinic_specialty" model="ir.actions.act_window">
+        <field name="name">Specialties</field>
+        <field name="res_model">clinic.specialty</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

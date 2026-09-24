@@ -14,6 +14,11 @@ Module for managing clinic operations, patient records, and appointments.
     'data': [
         'security/clinic_security.xml',
         'security/ir.model.access.csv',
+        'views/clinic_specialty_views.xml',
+        'views/clinic_patient_views.xml',
+        'views/clinic_doctor_views.xml',
+        'views/clinic_actions.xml',
+        'views/clinic_menus.xml',
     ],
     'application': True,
     'installable': True,
