@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Patient List View -->
+    <record id="view_clinic_patient_list" model="ir.ui.view">
+        <field name="name">clinic.patient.list</field>
+        <field name="model">clinic.patient</field>
+        <field name="arch" type="xml">
+            <list string="Patients">
+                <field name="name"/>
+                <field name="patient_code"/>
+                <field name="birthdate"/>
+                <field name="age"/>
+                <field name="blood_type"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Patient Form View -->
+    <record id="view_clinic_patient_form" model="ir.ui.view">
+        <field name="name">clinic.patient.form</field>
+        <field name="model">clinic.patient</field>
+        <field name="arch" type="xml">
+            <form string="Patient">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="patient_code"/>
+                            <field name="birthdate"/>
+                            <field name="age"/>
+                        </group>
+                        <group>
+                            <field name="blood_type"/>
+                            <field name="emergency_contact_name"/>
+                            <field name="emergency_contact_phone"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="allergies"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Patient Search View -->
+    <record id="view_clinic_patient_search" model="ir.ui.view">
+        <field name="name">clinic.patient.search</field>
+        <field name="model">clinic.patient</field>
+        <field name="arch" type="xml">
+            <search string="Search Patients">
+                <field name="name"/>
+                <field name="patient_code"/>
+                <field name="blood_type"/>
+                <group expand="0" string="Group By">
+                    <filter string="Blood Type" name="group_by_blood_type" context="{'group_by': 'blood_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>
