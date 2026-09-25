@@ -53,9 +53,9 @@
                 <field name="name"/>
                 <field name="patient_code"/>
                 <field name="blood_type"/>
-                <group expand="0" string="Group By">
-                    <filter string="Blood Type" name="group_by_blood_type" context="{'group_by': 'blood_type'}"/>
-                </group>
+                <separator/>
+                <filter string="Has Allergies" name="has_allergies"
+                        domain="[('allergies', '!=', False)]"/>
             </search>
         </field>
     </record>

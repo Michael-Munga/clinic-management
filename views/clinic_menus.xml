@@ -3,7 +3,9 @@
 
     <!-- Root Menu -->
     <menuitem id="menu_clinic_root"
-              name="Clinic"/>
+              name="Clinic"
+              web_icon="clinic_management,static/description/icon.png"
+              sequence="10"/>
 
     <!-- Main Menus -->
     <menuitem id="menu_clinic_patients"
@@ -12,22 +14,48 @@
               action="action_clinic_patient"
               sequence="10"/>
 
+    <menuitem id="menu_clinic_appointments"
+              name="Appointments"
+              parent="menu_clinic_root"
+              action="action_clinic_appointment"
+              sequence="15"/>
+
+    <!-- Doctors Menu (Receptionists and Managers only) -->
     <menuitem id="menu_clinic_doctors"
               name="Doctors"
               parent="menu_clinic_root"
               action="action_clinic_doctor"
+              groups="clinic_management.group_clinic_receptionist,clinic_management.group_clinic_manager"
               sequence="20"/>
 
-    <!-- Configuration Menu -->
+    <!-- Consultations (Doctors and Managers) -->
+    <menuitem id="menu_clinic_consultations"
+              name="Consultations"
+              parent="menu_clinic_root"
+              action="action_clinic_consultation"
+              groups="clinic_management.group_clinic_doctor,clinic_management.group_clinic_manager"
+              sequence="25"/>
+
+    <!-- Prescriptions (Doctors and Managers) -->
+    <menuitem id="menu_clinic_prescriptions"
+              name="Prescriptions"
+              parent="menu_clinic_root"
+              action="action_clinic_prescription"
+              groups="clinic_management.group_clinic_doctor,clinic_management.group_clinic_manager"
+              sequence="30"/>
+
+    <!-- Configuration Menu (Managers only) -->
     <menuitem id="menu_clinic_config"
               name="Configuration"
               parent="menu_clinic_root"
+              groups="clinic_management.group_clinic_manager"
               sequence="100"/>
 
     <!-- Configuration Submenus -->
     <menuitem id="menu_clinic_specialties"
               name="Specialties"
               parent="menu_clinic_config"
-              action="action_clinic_specialty"/>
+              action="action_clinic_specialty"
+              sequence="10"/>
 
 </odoo>

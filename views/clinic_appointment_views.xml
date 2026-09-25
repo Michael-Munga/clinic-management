@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 
+        ========================================================================
+        1. APPOINTMENT LIST VIEW (<list>)
+        ========================================================================
+        Odoo 19 uses <list> (older Odoo used <tree>).
+        Notice the 'decoration-*' attributes: they dynamically style rows with bootstrap colors!
+    -->
+    <record id="view_clinic_appointment_list" model="ir.ui.view">
+        <field name="name">clinic.appointment.list</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <list string="Appointments" decoration-info="state == 'draft'"
+                                        decoration-primary="state == 'confirmed'"
+                                        decoration-warning="state == 'in_progress'"
+                                        decoration-success="state == 'done'"
+                                        decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="specialty_id"/>
+                <field name="appointment_datetime"/>
+                <field name="duration"/>
+                <!-- widget="badge" renders the state as a modern rounded pill tag -->
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'draft'"
+                       decoration-primary="state == 'confirmed'"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-success="state == 'done'"
+                       decoration-muted="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- 
+        ========================================================================
+        2. APPOINTMENT FORM VIEW (<form>)
+        ========================================================================
+        Includes:
+        - <header>: Workflow action buttons and the interactive statusbar.
+        - <sheet>: Clean card container for fields.
+        - invisible="...": Dynamic visibility based on Python boolean logic!
+    -->
+    <record id="view_clinic_appointment_form" model="ir.ui.view">
+        <field name="name">clinic.appointment.form</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <form string="Appointment">
+                <!-- HEADER: Contains workflow action buttons and the statusbar -->
+                <header>
+                    <!-- 
+                        type="object": Tells Odoo to run a Python method on the model!
+                        name="action_confirm": Calls def action_confirm(self) in clinic_appointment.py.
+                        invisible="state != 'draft'": Button only appears in Draft state.
+                    -->
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+
+                    <button name="action_start_consultation" string="Start Consultation" type="object"
+                            class="oe_highlight" invisible="state != 'confirmed'"/>
+
+                    <button name="action_done" string="Complete" type="object"
+                            class="oe_highlight" invisible="state != 'in_progress'"/>
+
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ('done', 'cancel')"/>
+
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'cancel'"/>
+
+                    <!-- 
+                        STATUSBAR: Renders the pipeline at top-right.
+                        statusbar_visible: Which common states are always shown in the line.
+                    -->
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,in_progress,done"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <!-- Left Column -->
+                        <group string="Patient &amp; Doctor">
+                            <field name="patient_id"/>
+                            <field name="doctor_id"/>
+                            <field name="specialty_id"/>
+                        </group>
+
+                        <!-- Right Column -->
+                        <group string="Schedule">
+                            <field name="appointment_datetime"/>
+                            <field name="duration"/>
+                            <field name="appointment_end_datetime" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Enter clinical or booking notes..."/>
+                        </page>
+                        <page string="Cancellation" name="cancellation" invisible="state != 'cancel'">
+                            <group>
+                                <field name="cancellation_reason" placeholder="Reason for cancellation..."/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- 
+        ========================================================================
+        3. APPOINTMENT CALENDAR VIEW (<calendar>)
+        ========================================================================
+        Visual interactive schedule!
+        - date_start: The start time field
+        - date_stop: The end time field
+        - color: Groups/colors events on the calendar by Doctor!
+    -->
+    <record id="view_clinic_appointment_calendar" model="ir.ui.view">
+        <field name="name">clinic.appointment.calendar</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <calendar string="Appointments Calendar"
+                      date_start="appointment_datetime"
+                      date_stop="appointment_end_datetime"
+                      color="doctor_id"
+                      mode="week"
+                      event_open_popup="True"
+                      quick_create="False">
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="specialty_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- 
+        ========================================================================
+        4. APPOINTMENT SEARCH VIEW (<search>)
+        ========================================================================
+        Provides quick search, filters, and group-by aggregations.
+    -->
+    <record id="view_clinic_appointment_search" model="ir.ui.view">
+        <field name="name">clinic.appointment.search</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <search string="Search Appointments">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="specialty_id"/>
+
+                <!-- Filters -->
+                <separator/>
+                <filter string="Draft" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="filter_confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="In Progress" name="filter_in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Done" name="filter_done" domain="[('state', '=', 'done')]"/>
+
+                <!-- Group By -->
+                <group name="group_by">
+                    <filter string="Doctor" name="group_by_doctor" context="{'group_by': 'doctor_id'}"/>
+                    <filter string="Patient" name="group_by_patient" context="{'group_by': 'patient_id'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

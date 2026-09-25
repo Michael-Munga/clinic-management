@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Consultation List View -->
+    <record id="view_clinic_consultation_list" model="ir.ui.view">
+        <field name="name">clinic.consultation.list</field>
+        <field name="model">clinic.consultation</field>
+        <field name="arch" type="xml">
+            <list string="Consultations" decoration-info="state == 'draft'" decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="consultation_date"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="diagnosis"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Consultation Form View -->
+    <record id="view_clinic_consultation_form" model="ir.ui.view">
+        <field name="name">clinic.consultation.form</field>
+        <field name="model">clinic.consultation</field>
+        <field name="arch" type="xml">
+            <form string="Consultation">
+                <header>
+                    <button name="action_done" string="Complete Consultation" type="object"
+                            class="oe_highlight" invisible="state == 'done'"/>
+                    <button name="action_reset_to_draft" string="Reopen" type="object"
+                            invisible="state != 'done'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Appointment &amp; Patient">
+                            <field name="appointment_id"/>
+                            <field name="patient_id"/>
+                        </group>
+                        <group string="Doctor &amp; Date">
+                            <field name="doctor_id"/>
+                            <field name="consultation_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Clinical Findings" name="findings">
+                            <group>
+                                <field name="symptoms" placeholder="Describe symptoms or reasons for visit..."/>
+                                <field name="diagnosis" placeholder="Primary diagnosis and clinical assessment..."/>
+                                <field name="examination_notes" placeholder="Observations, vitals, test results..."/>
+                            </group>
+                        </page>
+                        <page string="Prescriptions" name="prescriptions">
+                            <!-- One2many embedded list -->
+                            <field name="prescription_ids" context="{'default_patient_id': patient_id, 'default_doctor_id': doctor_id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="state" widget="badge"
+                                           decoration-info="state == 'draft'"
+                                           decoration-success="state == 'confirmed'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Consultation Search View -->
+    <record id="view_clinic_consultation_search" model="ir.ui.view">
+        <field name="name">clinic.consultation.search</field>
+        <field name="model">clinic.consultation</field>
+        <field name="arch" type="xml">
+            <search string="Search Consultations">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="diagnosis"/>
+
+                <separator/>
+                <filter string="In Progress" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Completed" name="filter_done" domain="[('state', '=', 'done')]"/>
+
+                <group name="group_by">
+                    <filter string="Doctor" name="group_by_doctor" context="{'group_by': 'doctor_id'}"/>
+                    <filter string="Patient" name="group_by_patient" context="{'group_by': 'patient_id'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

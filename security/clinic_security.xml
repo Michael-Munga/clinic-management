@@ -1,28 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="group_clinic_category" model="ir.module.category">
+    <!-- 
+        ========================================================================
+        1. MODULE CATEGORY (ir.module.category)
+        ========================================================================
+        Defines the heading or folder in Settings -> Users & Companies -> Users.
+        It groups all permissions related to "Clinic" under one tidy section.
+    -->
+    <record id="module_category_clinic" model="ir.module.category">
         <field name="name">Clinic</field>
-        <field name="description">User access level for clinic management module</field>
-        <field name="sequence">10</field>
+        <field name="description">Clinic Management access rights</field>
+        <field name="sequence">25</field>
     </record>
 
+    <!-- 
+        ========================================================================
+        2. PRIVILEGE (res.groups.privilege) - NEW IN ODOO 19
+        ========================================================================
+        In older Odoo, res.groups directly linked to ir.module.category via 'category_id'.
+        In Odoo 19, 'category_id' was removed from res.groups!
+        Instead, Odoo 19 uses res.groups.privilege as the intermediate bridge linking
+        the category to the group roles.
+    -->
+    <record id="privilege_clinic" model="res.groups.privilege">
+        <field name="name">Clinic Management</field>
+        <field name="category_id" ref="module_category_clinic"/>
+    </record>
+
+    <!-- 
+        ========================================================================
+        3. USER GROUPS (res.groups)
+        ========================================================================
+        Each record represents a job role with different access levels.
+    -->
+
+    <!-- ROLE 1: RECEPTIONIST (Base clinic user) -->
+    <!-- Can register patients and check basic info. -->
     <record id="group_clinic_receptionist" model="res.groups">
         <field name="name">Clinic Receptionist</field>
-        <field name="category_id" ref="group_clinic_category"/>
+        <field name="privilege_id" ref="privilege_clinic"/>
+        <!-- 
+            implied_ids: Group Inheritance!
+            [(4, ref('base.group_user'))] means anyone who is a Receptionist automatically
+            inherits standard Odoo "Internal User" privileges.
+            Syntax: (4, ID) is an Odoo ORM command meaning "Link this existing record".
+        -->
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
+    <!-- ROLE 2: DOCTOR -->
+    <!-- Medical staff: accesses their own appointments, records consultations, writes prescriptions. -->
     <record id="group_clinic_doctor" model="res.groups">
         <field name="name">Clinic Doctor</field>
-        <field name="category_id" ref="group_clinic_category"/>
-        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="privilege_id" ref="privilege_clinic"/>
+        <!-- Inherits standard internal user access (cleanly replaces any previous links) -->
+        <field name="implied_ids" eval="[(6, 0, [ref('base.group_user')])]"/>
     </record>
 
+    <!-- ROLE 3: CLINIC MANAGER (Superuser for the clinic) -->
+    <!-- Has full administrative control across all clinic models. -->
     <record id="group_clinic_manager" model="res.groups">
         <field name="name">Clinic Manager</field>
-        <field name="category_id" ref="group_clinic_category"/>
-        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="privilege_id" ref="privilege_clinic"/>
+        <!-- Manager inherits both Receptionist and Doctor roles! -->
+        <field name="implied_ids" eval="[(6, 0, [ref('group_clinic_receptionist'), ref('group_clinic_doctor')])]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- 
+        ========================================================================
+        4. RECORD RULES (ir.rule) - ROW-LEVEL SECURITY
+        ========================================================================
+        ir.model.access.csv grants access to the TABLE.
+        ir.rule controls WHICH ROWS inside the table a user is allowed to see!
+    -->
+
+    <!-- RULE 1: Doctors see ONLY their own appointments -->
+    <record id="rule_clinic_appointment_doctor" model="ir.rule">
+        <field name="name">Doctors: Own Appointments Only</field>
+        <field name="model_id" ref="model_clinic_appointment"/>
+        <!-- domain_force automatically appends: WHERE doctor_id.user_id = <logged_in_user_id> -->
+        <field name="domain_force">[('doctor_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_clinic_doctor'))]"/>
+    </record>
+
+    <!-- RULE 2: Receptionists see ALL appointments (to manage clinic schedule) -->
+    <record id="rule_clinic_appointment_receptionist" model="ir.rule">
+        <field name="name">Receptionists: All Appointments</field>
+        <field name="model_id" ref="model_clinic_appointment"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_clinic_receptionist'))]"/>
+    </record>
+
+    <!-- RULE 3: Managers see ALL appointments -->
+    <record id="rule_clinic_appointment_manager" model="ir.rule">
+        <field name="name">Managers: All Appointments</field>
+        <field name="model_id" ref="model_clinic_appointment"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_clinic_manager'))]"/>
+    </record>
+
+    <!-- ==================================================================== -->
+    <!-- CONSULTATION RULES -->
+    <!-- ==================================================================== -->
+    <record id="rule_clinic_consultation_doctor" model="ir.rule">
+        <field name="name">Doctors: Own Consultations Only</field>
+        <field name="model_id" ref="model_clinic_consultation"/>
+        <field name="domain_force">[('doctor_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_clinic_doctor'))]"/>
+    </record>
+
+    <record id="rule_clinic_consultation_manager" model="ir.rule">
+        <field name="name">Managers: All Consultations</field>
+        <field name="model_id" ref="model_clinic_consultation"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_clinic_manager'))]"/>
+    </record>
+
+    <!-- ==================================================================== -->
+    <!-- PRESCRIPTION RULES -->
+    <!-- ==================================================================== -->
+    <record id="rule_clinic_prescription_doctor" model="ir.rule">
+        <field name="name">Doctors: Own Prescriptions Only</field>
+        <field name="model_id" ref="model_clinic_prescription"/>
+        <field name="domain_force">[('doctor_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_clinic_doctor'))]"/>
+    </record>
+
+    <record id="rule_clinic_prescription_manager" model="ir.rule">
+        <field name="name">Managers: All Prescriptions</field>
+        <field name="model_id" ref="model_clinic_prescription"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_clinic_manager'))]"/>
     </record>
 
 </odoo>
