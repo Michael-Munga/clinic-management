@@ -79,6 +79,23 @@
                 </header>
 
                 <sheet>
+                    <!-- 
+                        PHASE 4: CONSULTATION SMART BUTTON
+                        Once an appointment enters 'In Progress' or 'Done' and has a linked consultation,
+                        this button appears (invisible="not consultation_id") allowing 1-click access
+                        into the patient's medical consultation notes!
+                    -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_consultation"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-user-md"
+                                invisible="not consultation_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Consultation</span>
+                            </div>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -112,6 +129,18 @@
                         </page>
                     </notebook>
                 </sheet>
+                <!-- 
+                    ====================================================================
+                    PHASE 4: MODERN ODOO 19 CHATTER WIDGET (<chatter/>)
+                    ====================================================================
+                    In Odoo 19, placing <chatter/> directly below </sheet> renders:
+                    1. Message Composer ("Send message")
+                    2. Internal Notes Log ("Log note")
+                    3. Activity Scheduler ("Activities")
+                    4. Followers / Subscriptions list
+                    5. Full audit history of all tracked field changes!
+                -->
+                <chatter/>
             </form>
         </field>
     </record>

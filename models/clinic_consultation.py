@@ -6,7 +6,13 @@ class ClinicConsultation(models.Model):
     ClinicConsultation represents the medical record created by a doctor
     during or after an appointment.
     """
+    # =========================================================================
+    # PHASE 4: AUDIT CHATTER INHERITANCE
+    # =========================================================================
+    # Provides internal doctor notes, collaboration, and field change auditing.
+    # =========================================================================
     _name = 'clinic.consultation'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Clinic Consultation'
     _order = 'consultation_date desc, id desc'
 
@@ -17,6 +23,7 @@ class ClinicConsultation(models.Model):
         copy=False,
         readonly=True,
         default='New',
+        tracking=True,
     )
 
     # =========================================================================
@@ -59,7 +66,8 @@ class ClinicConsultation(models.Model):
     # 2. CLINICAL FINDINGS
     # =========================================================================
     symptoms = fields.Text(string='Symptoms / Chief Complaint')
-    diagnosis = fields.Text(string='Diagnosis', required=True)
+    # tracking=True: Logs any revision to the medical diagnosis into the audit timeline!
+    diagnosis = fields.Text(string='Diagnosis', required=True, tracking=True)
     examination_notes = fields.Text(string='Examination Notes')
 
     # =========================================================================
@@ -84,6 +92,8 @@ class ClinicConsultation(models.Model):
         default='draft',
         required=True,
         copy=False,
+        # tracking=True: Automatically records when the doctor completes or reopens a consultation
+        tracking=True,
     )
 
     def action_done(self):

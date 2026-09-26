@@ -8,7 +8,16 @@ class ClinicAppointment(models.Model):
     ClinicAppointment represents an operational booking between a patient and a doctor.
     Database table created by Odoo: 'clinic_appointment'.
     """
+    # =========================================================================
+    # PHASE 4: AUDIT CHATTER & ACTIVITY TRACKING INHERITANCE
+    # =========================================================================
+    # By inheriting 'mail.thread' and 'mail.activity.mixin', this model gains:
+    # 1. 'mail.thread': Chatter message history, internal notes, followers, email alerts.
+    # 2. 'mail.activity.mixin': Activity scheduling (to-dos, calls, follow-up reminders).
+    # 3. Automatic audit logging whenever a field marked with 'tracking=True' changes.
+    # =========================================================================
     _name = 'clinic.appointment'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Clinic Appointment'
     # _order controls the default SQL sorting: newest appointments first.
     _order = 'appointment_datetime desc, id desc'
@@ -47,6 +56,8 @@ class ClinicAppointment(models.Model):
         # ondelete='restrict': Prevents deleting a doctor if they have appointments in the database!
         ondelete='restrict',
         index=True,
+        # tracking=True: Generates an automatic audit log in chatter if reassigned to another doctor!
+        tracking=True,
     )
 
     # RELATED FIELD:
@@ -75,6 +86,7 @@ class ClinicAppointment(models.Model):
         required=True,
         default=fields.Datetime.now,
         index=True,
+        tracking=True,
     )
 
     # Duration in minutes (e.g., 30 mins, 45 mins, 60 mins).
@@ -111,6 +123,9 @@ class ClinicAppointment(models.Model):
         required=True,
         copy=False,
         index=True,
+        # tracking=True: Whenever status changes (e.g. Draft -> Confirmed -> In Progress -> Done),
+        # Odoo automatically writes an audit note in Chatter with the user, timestamp, and transition!
+        tracking=True,
     )
 
     cancellation_reason = fields.Text(string='Cancellation Reason')
@@ -190,6 +205,18 @@ class ClinicAppointment(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Consultation',
+            'res_model': 'clinic.consultation',
+            'res_id': self.consultation_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_view_consultation(self):
+        """Opens the linked consultation from the stat button."""
+        self.ensure_one()
+        return {
+            'name': 'Consultation',
+            'type': 'ir.actions.act_window',
             'res_model': 'clinic.consultation',
             'res_id': self.consultation_id.id,
             'view_mode': 'form',

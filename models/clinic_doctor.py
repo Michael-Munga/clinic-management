@@ -56,6 +56,68 @@ class ClinicDoctor(models.Model):
         'The license number must be unique!',
     )
 
+    # =========================================================================
+    # PHASE 4: SMART BUTTONS (DOCTOR METRICS & JUMP NAVIGATION)
+    # =========================================================================
+    # Allows clinic managers and doctors to immediately see and jump to:
+    # 1. All appointments assigned to this doctor.
+    # 2. All medical consultations completed by this doctor.
+    # =========================================================================
+
+    appointment_count = fields.Integer(
+        string='Appointments Count',
+        compute='_compute_appointment_count',
+        help='Total number of appointments scheduled with this doctor',
+    )
+    consultation_count = fields.Integer(
+        string='Consultations Count',
+        compute='_compute_consultation_count',
+        help='Total medical consultations performed by this doctor',
+    )
+
+    def _compute_appointment_count(self):
+        """Counts appointments for this doctor using fast SQL COUNT."""
+        for record in self:
+            record.appointment_count = self.env['clinic.appointment'].search_count([
+                ('doctor_id', '=', record.id),
+            ])
+
+    def _compute_consultation_count(self):
+        """Counts consultations conducted by this doctor using fast SQL COUNT."""
+        for record in self:
+            record.consultation_count = self.env['clinic.consultation'].search_count([
+                ('doctor_id', '=', record.id),
+            ])
+
+    def action_view_appointments(self):
+        """
+        Opens a pre-filtered window displaying all appointments assigned to this doctor.
+        Sets 'default_doctor_id' in context so newly created appointments default to this doctor.
+        """
+        self.ensure_one()
+        return {
+            'name': f"Appointments - {self.name}",
+            'type': 'ir.actions.act_window',
+            'res_model': 'clinic.appointment',
+            'view_mode': 'list,form,calendar',
+            'domain': [('doctor_id', '=', self.id)],
+            'context': {'default_doctor_id': self.id},
+        }
+
+    def action_view_consultations(self):
+        """
+        Opens a pre-filtered window displaying all consultations conducted by this doctor.
+        """
+        self.ensure_one()
+        return {
+            'name': f"Consultations - {self.name}",
+            'type': 'ir.actions.act_window',
+            'res_model': 'clinic.consultation',
+            'view_mode': 'list,form',
+            'domain': [('doctor_id', '=', self.id)],
+            'context': {'default_doctor_id': self.id},
+        }
+
     @api.model_create_multi
     def create(self, vals_list):
         """

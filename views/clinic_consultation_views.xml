@@ -70,6 +70,8 @@
                         </page>
                     </notebook>
                 </sheet>
+                <!-- PHASE 4: Audit chatter for internal doctor notes, activities, and diagnosis edits -->
+                <chatter/>
             </form>
         </field>
     </record>

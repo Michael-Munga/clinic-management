@@ -22,6 +22,25 @@
         <field name="arch" type="xml">
             <form string="Doctor">
                 <sheet>
+                    <!-- 
+                        PHASE 4: DOCTOR SMART BUTTONS
+                        Displays live counters for total appointments and consultations.
+                        Clicking either button opens a pre-filtered list view.
+                    -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_appointments"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-calendar">
+                            <field name="appointment_count" widget="statinfo" string="Appointments"/>
+                        </button>
+                        <button name="action_view_consultations"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-user-md">
+                            <field name="consultation_count" widget="statinfo" string="Consultations"/>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="name"/>

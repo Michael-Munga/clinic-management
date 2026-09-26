@@ -2,7 +2,7 @@
 
 > **Odoo Version:** 19.0 Community / Enterprise  
 > **Module Name:** `clinic_management`  
-> **Status:** Active Development (Phase 3 next)
+> **Status:** Active Development (Phase 5 next)
 
 ---
 
@@ -108,12 +108,14 @@ A complete clinic operations management system built natively in Odoo 19. It rep
 
 ---
 
-### ⏳ Phase 4: Smart Buttons & Audit Chatter
-- [ ] Inherit `mail.thread` and `mail.activity.mixin` on Appointment, Consultation, and Prescription.
-- [ ] Bottom Chatter widget: Message log, internal notes, activity scheduling (follow-ups).
-- [ ] Stat / Smart Buttons at the top of forms:
-  - Patient form: Number of Appointments, Number of Prescriptions.
-  - Doctor form: Appointments Today, Consultations this month.
+### ✅ Phase 4: Smart Buttons & Audit Chatter (COMPLETED)
+- [x] Inherited `mail.thread` and `mail.activity.mixin` on Appointment, Consultation, and Prescription.
+- [x] Configured field tracking (`tracking=True`) for automatic status & doctor change auditing.
+- [x] Modern `<chatter/>` widget integrated on Appointment, Consultation, and Prescription form views (Log Notes, Send Message, Schedule Activity).
+- [x] Stat / Smart Buttons at top of form sheets:
+  - Patient form: Appointments Count (`action_view_appointments`), Prescriptions Count (`action_view_prescriptions`).
+  - Doctor form: Appointments Count (`action_view_appointments`), Consultations Count (`action_view_consultations`).
+  - Appointment form: Consultation Stat Button (`action_view_consultation`).
 
 ---
 

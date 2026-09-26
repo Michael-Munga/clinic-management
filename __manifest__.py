@@ -14,7 +14,8 @@ Module for managing clinic operations, patient records, and appointments.
     # DEPENDENCIES:
     # 'base': provides core Odoo features and the 'res.partner' model (used by patients).
     # 'hr': provides employee management and 'hr.employee' (used by doctors).
-    'depends': ['base', 'hr'],
+    # 'mail': provides chatter, message threads, activities, and audit tracking.
+    'depends': ['base', 'hr', 'mail'],
 
     # DATA LOADING ORDER:
     # Odoo loads files sequentially from top to bottom. Order is critical:

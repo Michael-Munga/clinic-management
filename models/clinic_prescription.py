@@ -6,7 +6,13 @@ class ClinicPrescription(models.Model):
     ClinicPrescription represents a doctor's medication order for a patient.
     Can be created directly or spawned from a consultation.
     """
+    # =========================================================================
+    # PHASE 4: AUDIT CHATTER INHERITANCE
+    # =========================================================================
+    # Gives prescriptions audit tracking, doctor notes, and activity scheduling.
+    # =========================================================================
     _name = 'clinic.prescription'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Clinic Prescription'
     _order = 'date desc, id desc'
 
@@ -16,6 +22,7 @@ class ClinicPrescription(models.Model):
         copy=False,
         readonly=True,
         default='New',
+        tracking=True,
     )
 
     # =========================================================================
@@ -33,6 +40,7 @@ class ClinicPrescription(models.Model):
         string='Patient',
         required=True,
         index=True,
+        tracking=True,
     )
 
     doctor_id = fields.Many2one(
@@ -40,12 +48,14 @@ class ClinicPrescription(models.Model):
         string='Doctor',
         required=True,
         index=True,
+        tracking=True,
     )
 
     date = fields.Date(
         string='Prescription Date',
         default=fields.Date.today,
         required=True,
+        tracking=True,
     )
 
     # =========================================================================
@@ -72,6 +82,8 @@ class ClinicPrescription(models.Model):
         default='draft',
         required=True,
         copy=False,
+        # tracking=True: Logs prescription confirmation into chatter
+        tracking=True,
     )
 
     def action_confirm(self):
