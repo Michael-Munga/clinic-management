@@ -28,6 +28,16 @@
                 <header>
                     <button name="action_done" string="Complete Consultation" type="object"
                             class="oe_highlight" invisible="state == 'done'"/>
+                    
+                    <!-- 
+                        PHASE 5: SCHEDULE FOLLOW-UP BUTTON
+                        Available once a consultation is completed (invisible="state != 'done'").
+                        Clicking this calls action_open_followup_wizard, opening the pop-up modal
+                        with pre-filled patient, doctor, and recommended 2-week date!
+                    -->
+                    <button name="action_open_followup_wizard" string="Schedule Follow-Up" type="object"
+                            class="btn-primary" invisible="state != 'done'"/>
+
                     <button name="action_reset_to_draft" string="Reopen" type="object"
                             invisible="state != 'done'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,done"/>

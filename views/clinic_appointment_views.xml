@@ -64,7 +64,13 @@
                     <button name="action_done" string="Complete" type="object"
                             class="oe_highlight" invisible="state != 'in_progress'"/>
 
-                    <button name="action_cancel" string="Cancel" type="object"
+                    <!-- 
+                        PHASE 5: CANCEL WIZARD BUTTON
+                        Instead of immediately setting state to 'cancel', clicking this button
+                        calls action_open_cancel_wizard, which opens the pop-up modal dialog 
+                        prompting the user for a mandatory cancellation reason!
+                    -->
+                    <button name="action_open_cancel_wizard" string="Cancel" type="object"
                             invisible="state in ('done', 'cancel')"/>
 
                     <button name="action_reset_to_draft" string="Reset to Draft" type="object"

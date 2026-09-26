@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 
+        ========================================================================
+        PHASE 5: WIZARD FORM VIEW (<form>)
+        ========================================================================
+        Notice the key differences between a regular Form and a Wizard Form:
+        1. NO <header> with statusbars (a wizard is a focused, 1-step dialog).
+        2. NO <sheet> container (the pop-up modal itself is the container).
+        3. NO <chatter> (a temporary wizard does not have a message history).
+        4. <footer>: Houses the action buttons at the bottom of the modal.
+           - special="cancel": Built-in Odoo attribute that immediately closes 
+             the modal without needing any Python code!
+           - type="object": Executes a Python method on the TransientModel.
+        ========================================================================
+    -->
+    <record id="view_appointment_cancel_wizard_form" model="ir.ui.view">
+        <field name="name">appointment.cancel.wizard.form</field>
+        <field name="model">appointment.cancel.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cancel Appointment">
+                <group>
+                    <field name="appointment_id" readonly="1"/>
+                    <field name="cancellation_reason" 
+                           placeholder="Please provide the specific reason for cancelling this appointment..."/>
+                </group>
+
+                <!-- FOOTER: Standard bottom bar for modal dialogs -->
+                <footer>
+                    <!-- Calls action_confirm_cancellation in cancel_appointment_wizard.py -->
+                    <button name="action_confirm_cancellation" 
+                            string="Confirm Cancellation" 
+                            type="object" 
+                            class="btn-danger"/>
+
+                    <!-- special="cancel" is an Odoo keyword that closes the modal cleanly -->
+                    <button string="Discard" 
+                            class="btn-secondary" 
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

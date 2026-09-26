@@ -108,3 +108,31 @@ class ClinicConsultation(models.Model):
         """Reopens the consultation for editing."""
         for record in self:
             record.state = 'draft'
+
+    # =========================================================================
+    # PHASE 5: SCHEDULE FOLLOW-UP WIZARD LAUNCHER
+    # =========================================================================
+    def action_open_followup_wizard(self):
+        """
+        Triggered when a doctor clicks 'Schedule Follow-Up' on a consultation.
+        
+        HOW THIS MODAL IS PRE-FILLED:
+        - 'target': 'new' opens the pop-up modal dialog box.
+        - 'context': Passes:
+            * 'default_consultation_id': Links back to this consultation.
+            * 'default_patient_id': Pre-selects the patient from this consultation.
+            * 'default_doctor_id': Pre-selects the doctor who conducted this consultation.
+        """
+        self.ensure_one()
+        return {
+            'name': 'Schedule Follow-Up',
+            'type': 'ir.actions.act_window',
+            'res_model': 'appointment.followup.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_consultation_id': self.id,
+                'default_patient_id': self.patient_id.id,
+                'default_doctor_id': self.doctor_id.id,
+            },
+        }

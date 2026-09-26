@@ -33,6 +33,8 @@ Module for managing clinic operations, patient records, and appointments.
         'views/clinic_appointment_views.xml',
         'views/clinic_consultation_views.xml',
         'views/clinic_prescription_views.xml',
+        'wizard/cancel_appointment_wizard_views.xml',
+        'wizard/schedule_followup_wizard_views.xml',
         'views/clinic_actions.xml',
         'views/clinic_menus.xml',
     ],

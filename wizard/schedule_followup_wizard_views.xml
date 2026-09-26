@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 
+        ========================================================================
+        PHASE 5: SCHEDULE FOLLOW-UP WIZARD FORM VIEW
+        ========================================================================
+        Provides a clean pop-up modal dialog for doctors to quickly book a
+        patient's review visit without leaving the consultation screen.
+        ========================================================================
+    -->
+    <record id="view_appointment_followup_wizard_form" model="ir.ui.view">
+        <field name="name">appointment.followup.wizard.form</field>
+        <field name="model">appointment.followup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Schedule Follow-Up Appointment">
+                <group>
+                    <group string="Patient &amp; Doctor">
+                        <field name="consultation_id" invisible="1"/>
+                        <field name="patient_id" readonly="1"/>
+                        <field name="doctor_id"/>
+                    </group>
+                    <group string="Proposed Schedule">
+                        <field name="followup_datetime"/>
+                        <field name="duration"/>
+                    </group>
+                </group>
+
+                <group string="Clinical Instructions">
+                    <field name="notes" placeholder="e.g. Review lab results, evaluate medication response..."/>
+                </group>
+
+                <!-- Modal Footer Buttons -->
+                <footer>
+                    <button name="action_confirm_followup" 
+                            string="Book Follow-Up" 
+                            type="object" 
+                            class="oe_highlight"/>
+
+                    <button string="Cancel" 
+                            class="btn-secondary" 
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

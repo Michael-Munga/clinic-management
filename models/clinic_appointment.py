@@ -228,6 +228,34 @@ class ClinicAppointment(models.Model):
         for record in self:
             record.state = 'done'
 
+    # =========================================================================
+    # PHASE 5: WIZARD TRIGGER (POP-UP MODAL LAUNCHER)
+    # =========================================================================
+    def action_open_cancel_wizard(self):
+        """
+        Triggered when clicking the 'Cancel' button on the Appointment form.
+        
+        HOW ODOO CREATES A POP-UP MODAL:
+        - 'type': 'ir.actions.act_window': Standard window action.
+        - 'res_model': 'appointment.cancel.wizard': Opens our TransientModel.
+        - 'view_mode': 'form': Displays the wizard form view.
+        - 'target': 'new':
+            THE MAGIC KEYWORD! Tells Odoo's web client NOT to navigate away to a full page,
+            but instead to render this form as a centered modal dialog box with a darkened backdrop!
+        - 'context': {'default_appointment_id': self.id}:
+            Automatically passes the current appointment's ID into the wizard's Many2one field
+            so the wizard knows exactly which appointment is being cancelled!
+        """
+        self.ensure_one()
+        return {
+            'name': 'Cancel Appointment',
+            'type': 'ir.actions.act_window',
+            'res_model': 'appointment.cancel.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_appointment_id': self.id},
+        }
+
     def action_cancel(self):
         """Moves appointment to Cancelled."""
         for record in self:

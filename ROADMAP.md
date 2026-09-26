@@ -2,7 +2,7 @@
 
 > **Odoo Version:** 19.0 Community / Enterprise  
 > **Module Name:** `clinic_management`  
-> **Status:** Active Development (Phase 5 next)
+> **Status:** Active Development (Phase 6 next)
 
 ---
 
@@ -119,9 +119,16 @@ A complete clinic operations management system built natively in Odoo 19. It rep
 
 ---
 
-### ⏳ Phase 5: Wizards & Workflow Helpers
-- [ ] "Cancel Appointment" Wizard: Pop-up dialog prompting for cancellation reason, then moving state to `cancel`.
-- [ ] "Schedule Follow-up" Wizard: Pre-filled appointment creation dialog from a completed consultation.
+### ✅ Phase 5: Wizards & Workflow Helpers (COMPLETED)
+- [x] Dedicated `wizard/` package with `models.TransientModel` implementations.
+- [x] "Cancel Appointment" Wizard (`appointment.cancel.wizard`):
+  - Pop-up modal dialog (`target="new"`).
+  - Mandatory cancellation reason input.
+  - Automatically moves state to `cancel`, logs reason in Chatter, and closes dialog.
+- [x] "Schedule Follow-up" Wizard (`appointment.followup.wizard`):
+  - Launched directly from completed consultations.
+  - Pre-fills patient, doctor, and recommended 2-week date.
+  - Generates new draft appointment and posts audit confirmation into consultation chatter.
 
 ---
 
