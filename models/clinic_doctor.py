@@ -145,3 +145,29 @@ class ClinicDoctor(models.Model):
                     user.write({'groups_id': [(4, doctor_group.id)]})
                 vals['user_id'] = user.id
         return super().create(vals_list)
+
+    def write(self, vals):
+        """
+        Automated User Provisioning on Update:
+        If an existing doctor record is updated with a work_email and has no user_id,
+        Odoo automatically creates/finds the res.users account and links it!
+        """
+        doctor_group = self.env.ref('clinic_management.group_clinic_doctor', raise_if_not_found=False)
+        res = super().write(vals)
+        if 'work_email' in vals or 'name' in vals:
+            for record in self:
+                if record.work_email and not record.user_id:
+                    user = self.env['res.users'].search([('login', '=', record.work_email)], limit=1)
+                    if not user:
+                        user_vals = {
+                            'name': record.name or record.work_email,
+                            'login': record.work_email,
+                            'email': record.work_email,
+                        }
+                        if doctor_group:
+                            user_vals['groups_id'] = [(4, doctor_group.id)]
+                        user = self.env['res.users'].create(user_vals)
+                    elif doctor_group and doctor_group not in user.groups_id:
+                        user.write({'groups_id': [(4, doctor_group.id)]})
+                    record.user_id = user.id
+        return res
