@@ -96,6 +96,15 @@ class ClinicPrescription(models.Model):
         for record in self:
             record.state = 'draft'
 
+    def _get_report_base_filename(self):
+        """
+        Official Odoo Report Naming Convention:
+        Used by ir.actions.report and CustomerPortal._show_report to compute
+        the default downloaded PDF filename cleanly without manual string formatting.
+        """
+        self.ensure_one()
+        return f'Prescription - {self.name}'
+
 
 class ClinicPrescriptionLine(models.Model):
     """

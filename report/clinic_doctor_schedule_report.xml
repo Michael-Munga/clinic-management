@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 
+        ========================================================================
+        PHASE 6: DOCTOR DAILY SCHEDULE REPORT ACTION (ir.actions.report)
+        ========================================================================
+        Binds to 'clinic.doctor':
+        Allows clinic managers and doctors to print a daily timetable of their
+        appointments directly from the Doctor form or list view!
+        ========================================================================
+    -->
+    <record id="action_report_doctor_schedule" model="ir.actions.report">
+        <field name="name">Daily Schedule</field>
+        <field name="model">clinic.doctor</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">clinic_management.report_doctor_schedule_document</field>
+        <field name="report_file">clinic_management.report_doctor_schedule_document</field>
+        <field name="binding_model_id" ref="model_clinic_doctor"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 
+        ========================================================================
+        PHASE 6: DOCTOR DAILY SCHEDULE QWEB TEMPLATE
+        ========================================================================
+        Renders a printable schedule sheet for the doctor containing:
+        - Doctor details (Specialty, License No., Work Phone)
+        - Table of scheduled appointments (Time, Duration, Patient, Vitals, Notes)
+        - State badge formatting
+        ========================================================================
+    -->
+    <template id="report_doctor_schedule_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <!-- HEADER -->
+                        <div class="row mb-4 border-bottom pb-2">
+                            <div class="col-8">
+                                <h2 class="text-primary font-weight-bold">DOCTOR APPOINTMENTS SCHEDULE</h2>
+                                <h4 class="text-dark"><span t-field="doc.name"/></h4>
+                                <p class="text-muted mb-0" t-if="doc.specialty_id">
+                                    <strong>Specialty:</strong> <span t-field="doc.specialty_id.name"/>
+                                    <span t-if="doc.license_number" class="ms-3">
+                                        | <strong>License:</strong> <span t-field="doc.license_number"/>
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-4 text-end">
+                                <p class="text-muted mb-0"><strong>Print Date:</strong></p>
+                                <p class="h6"><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/></p>
+                            </div>
+                        </div>
+
+                        <!-- APPOINTMENTS TABLE -->
+                        <table class="table table-sm table-striped border mt-3">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th style="width: 5%;">#</th>
+                                    <th style="width: 20%;">Date &amp; Time</th>
+                                    <th style="width: 10%;">Duration</th>
+                                    <th style="width: 25%;">Patient Details</th>
+                                    <th style="width: 15%;">Status</th>
+                                    <th style="width: 25%;">Clinical Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loop through doctor's active appointments -->
+                                <t t-set="active_appointments" 
+                                   t-value="doc.appointment_ids.filtered(lambda a: a.state != 'cancel').sorted(key=lambda a: a.appointment_datetime or datetime.datetime.min)"/>
+
+                                <tr t-foreach="active_appointments" t-as="appt">
+                                    <td><span t-esc="appt_index + 1"/></td>
+                                    <td>
+                                        <strong><span t-field="appt.appointment_datetime"/></strong>
+                                    </td>
+                                    <td><span t-field="appt.duration"/> Mins</td>
+                                    <td>
+                                        <strong><span t-field="appt.patient_id.name"/></strong><br/>
+                                        <span class="text-muted small">
+                                            Code: <span t-field="appt.patient_id.patient_code"/>
+                                            <t t-if="appt.patient_id.blood_type"> | Blood: <span t-field="appt.patient_id.blood_type"/></t>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill text-bg-info text-capitalize" 
+                                              t-field="appt.state"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="appt.notes"/>
+                                    </td>
+                                </tr>
+
+                                <tr t-if="not active_appointments">
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        No active appointments scheduled for Dr. <span t-field="doc.name"/>.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- FOOTER NOTE -->
+                        <div class="row mt-4">
+                            <div class="col-12 text-muted small">
+                                <p>* Cancelled appointments are automatically excluded from this schedule.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

@@ -135,4 +135,49 @@
         <field name="groups" eval="[(4, ref('group_clinic_manager'))]"/>
     </record>
 
+    <!-- ==================================================================== -->
+    <!-- PHASE 7: PORTAL PATIENT RECORD RULES -->
+    <!-- ==================================================================== -->
+    <!--
+        Portal Security Architecture:
+        External portal users belong to 'base.group_portal'.
+        Every portal user has a linked partner record: 'user.partner_id'.
+        Since clinic.patient delegates to res.partner via 'partner_id',
+        we match 'patient_id.partner_id' against 'user.partner_id.id'.
+        This guarantees strict data isolation: Patients can NEVER view another
+        patient's medical appointments or prescriptions!
+    -->
+
+    <!-- PORTAL RULE 1: Patients see only their own appointments -->
+    <record id="rule_clinic_appointment_portal" model="ir.rule">
+        <field name="name">Portal Patients: Own Appointments Only</field>
+        <field name="model_id" ref="model_clinic_appointment"/>
+        <field name="domain_force">[('patient_id.partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <!-- PORTAL RULE 2: Patients see only their own prescriptions -->
+    <record id="rule_clinic_prescription_portal" model="ir.rule">
+        <field name="name">Portal Patients: Own Prescriptions Only</field>
+        <field name="model_id" ref="model_clinic_prescription"/>
+        <field name="domain_force">[('patient_id.partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <!-- PORTAL RULE 3: Patients see only their own prescription lines -->
+    <record id="rule_clinic_prescription_line_portal" model="ir.rule">
+        <field name="name">Portal Patients: Own Prescription Lines Only</field>
+        <field name="model_id" ref="model_clinic_prescription_line"/>
+        <field name="domain_force">[('prescription_id.patient_id.partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <!-- PORTAL RULE 4: Patients see only their own patient profile record -->
+    <record id="rule_clinic_patient_portal" model="ir.rule">
+        <field name="name">Portal Patients: Own Patient Profile Only</field>
+        <field name="model_id" ref="model_clinic_patient"/>
+        <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
 </odoo>

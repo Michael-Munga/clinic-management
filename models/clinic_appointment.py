@@ -265,3 +265,19 @@ class ClinicAppointment(models.Model):
         """Resets a cancelled appointment back to Draft."""
         for record in self:
             record.state = 'draft'
+
+    # =========================================================================
+    # PHASE 6: REPORT PRINT ACTION METHOD
+    # =========================================================================
+    def action_print_doctor_schedule(self):
+        """
+        Triggered when clicking 'Print Schedule' on the Appointment form.
+        
+        HOW REPORT_ACTION WORKS IN PYTHON:
+        - self.env.ref('module.action_xml_id') looks up the report action record.
+        - .report_action(self.doctor_id) tells Odoo:
+          "Generate the Daily Schedule PDF passing self.doctor_id as the document record!"
+        - Returns a dictionary instructing Odoo's web client to trigger the file download.
+        """
+        self.ensure_one()
+        return self.env.ref('clinic_management.action_report_doctor_schedule').report_action(self.doctor_id)

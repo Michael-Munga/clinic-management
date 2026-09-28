@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 
+        ========================================================================
+        PHASE 6: REPORT ACTION (ir.actions.report)
+        ========================================================================
+        This record registers the PDF report in Odoo:
+        - name: The human-readable title shown in menus ("Prescription").
+        - model: The model this report prints ("clinic.prescription").
+        - report_type: 'qweb-pdf' compiles QWeb HTML and outputs a downloadable PDF.
+        - report_name: The XML ID of the QWeb template to render.
+        - report_file: The default filename when downloaded.
+        - binding_model_id: Binds this report to the model so a "Print" button
+          automatically appears in the top action toolbar of every prescription!
+        - binding_type: 'report' places it under the Print dropdown.
+        ========================================================================
+    -->
+    <record id="action_report_clinic_prescription" model="ir.actions.report">
+        <field name="name">Prescription</field>
+        <field name="model">clinic.prescription</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">clinic_management.report_prescription_document</field>
+        <field name="report_file">clinic_management.report_prescription_document</field>
+        <field name="binding_model_id" ref="model_clinic_prescription"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

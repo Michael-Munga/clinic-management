@@ -2,3 +2,4 @@
 # Root module initialization: loads models and wizard packages
 from . import models
 from . import wizard
+from . import controllers

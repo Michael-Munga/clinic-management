@@ -27,6 +27,19 @@
                 <header>
                     <button name="action_confirm" string="Confirm Prescription" type="object"
                             class="oe_highlight" invisible="state == 'confirmed'"/>
+                    
+                    <!-- 
+                        PHASE 6: DIRECT PRINT BUTTON
+                        - type="action": Tells Odoo to trigger an action (not a python method).
+                        - name: Dynamically evaluates the integer database ID of the report action.
+                        - icon="fa-print": Standard printer icon.
+                    -->
+                    <button name="%(clinic_management.action_report_clinic_prescription)d"
+                            string="Print Prescription"
+                            type="action"
+                            class="btn-primary"
+                            icon="fa-print"/>
+
                     <button name="action_reset_to_draft" string="Reset to Draft" type="object"
                             invisible="state != 'confirmed'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>

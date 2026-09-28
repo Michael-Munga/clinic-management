@@ -15,7 +15,8 @@ Module for managing clinic operations, patient records, and appointments.
     # 'base': provides core Odoo features and the 'res.partner' model (used by patients).
     # 'hr': provides employee management and 'hr.employee' (used by doctors).
     # 'mail': provides chatter, message threads, activities, and audit tracking.
-    'depends': ['base', 'hr', 'mail'],
+    # 'portal': provides customer/patient self-service portal, routes, and layout templates.
+    'depends': ['base', 'hr', 'mail', 'portal'],
 
     # DATA LOADING ORDER:
     # Odoo loads files sequentially from top to bottom. Order is critical:
@@ -32,7 +33,12 @@ Module for managing clinic operations, patient records, and appointments.
         'views/clinic_doctor_views.xml',
         'views/clinic_appointment_views.xml',
         'views/clinic_consultation_views.xml',
+        'report/clinic_prescription_template.xml',
+        'report/clinic_prescription_report.xml',
+        'report/clinic_doctor_schedule_template.xml',
+        'report/clinic_doctor_schedule_report.xml',
         'views/clinic_prescription_views.xml',
+        'views/portal_templates.xml',
         'wizard/cancel_appointment_wizard_views.xml',
         'wizard/schedule_followup_wizard_views.xml',
         'views/clinic_actions.xml',

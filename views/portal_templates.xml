@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    =============================================================================
+    CLINIC MANAGEMENT - PATIENT PORTAL QWEB TEMPLATES
+    =============================================================================
+    In Odoo, the Customer Portal is built on the QWeb templating engine.
+    External users (such as clinic patients) access this web portal to view their
+    records without needing access to the backend management interface.
+
+    ARCHITECTURAL PATTERNS DEMONSTRATED:
+    1. Template Inheritance: Extending 'portal.portal_breadcrumbs' and 'portal.portal_my_home'.
+    2. Dynamic Breadcrumbs: Updating the path (Home > Appointments > APPT-0001).
+    3. Portal Cards: Document entry cards with live count badges on the portal dashboard.
+    4. Portal Tables: Responsive tables with Bootstrap styling via 'portal.portal_table'.
+    5. Direct PDF Downloads: Interactive buttons linking to controller download endpoints.
+    =============================================================================
+-->
+<odoo>
+
+    <!-- ==================================================================== -->
+    <!-- 1. BREADCRUMBS INHERITANCE                                           -->
+    <!-- ==================================================================== -->
+    <!--
+        Extends 'portal.portal_breadcrumbs' to add clinic navigation items.
+        When visiting /my/appointments, the breadcrumb shows:
+            Home / Appointments
+        When viewing a specific appointment (e.g. APPT-0001):
+            Home / Appointments / APPT-0001
+    -->
+    <template id="portal_my_home_menu_clinic" name="Portal Breadcrumbs: Clinic Entries" inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <!-- APPOINTMENTS BREADCRUMB -->
+            <li t-if="page_name == 'appointment' or appointment" class="breadcrumb-item" t-att-class="'active' if not appointment else ''">
+                <a t-if="appointment" href="/my/appointments">Appointments</a>
+                <t t-else="">Appointments</t>
+            </li>
+            <li t-if="appointment" class="breadcrumb-item active">
+                <t t-out="appointment.name"/>
+            </li>
+
+            <!-- PRESCRIPTIONS BREADCRUMB -->
+            <li t-if="page_name == 'prescription' or prescription" class="breadcrumb-item" t-att-class="'active' if not prescription else ''">
+                <a t-if="prescription" href="/my/prescriptions">Prescriptions</a>
+                <t t-else="">Prescriptions</t>
+            </li>
+            <li t-if="prescription" class="breadcrumb-item active">
+                <t t-out="prescription.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- ==================================================================== -->
+    <!-- 2. PORTAL HOME CARDS INHERITANCE                                     -->
+    <!-- ==================================================================== -->
+    <!--
+        Extends 'portal.portal_my_home' to display Appointments and Prescriptions
+        cards on the patient's dashboard (/my).
+    -->
+    <template id="portal_my_home_clinic" name="Portal Home: Clinic Cards" inherit_id="portal.portal_my_home" priority="30">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <!-- Card 1: Appointments -->
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Appointments</t>
+                <t t-set="url" t-value="'/my/appointments'"/>
+                <t t-set="text">Track your scheduled clinic appointments and doctors</t>
+                <t t-set="placeholder_count" t-value="'appointment_count'"/>
+            </t>
+            <!-- Card 2: Prescriptions -->
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Prescriptions</t>
+                <t t-set="url" t-value="'/my/prescriptions'"/>
+                <t t-set="text">Review your medication orders and download PDF prescriptions</t>
+                <t t-set="placeholder_count" t-value="'prescription_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- ==================================================================== -->
+    <!-- 3. PATIENT APPOINTMENTS LIST VIEW                                    -->
+    <!-- ==================================================================== -->
+    <template id="portal_my_appointments" name="My Appointments">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Appointments</t>
+            </t>
+
+            <!-- Empty State Alert -->
+            <t t-if="not appointments">
+                <div class="alert alert-info mt-3 d-flex align-items-center" role="alert">
+                    <i class="fa fa-calendar-o fa-2x me-3"/>
+                    <div>
+                        <h5 class="alert-heading mb-1">No Appointments Found</h5>
+                        <p class="mb-0">You currently have no scheduled appointments on record.</p>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Table of Appointments -->
+            <t t-if="appointments" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Appointment #</th>
+                        <th>Date &amp; Time</th>
+                        <th>Doctor</th>
+                        <th>Specialty</th>
+                        <th>Duration</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="appointments" t-as="appointment">
+                        <td>
+                            <a t-attf-href="/my/appointments/#{appointment.id}">
+                                <strong t-field="appointment.name"/>
+                            </a>
+                        </td>
+                        <td>
+                            <span t-field="appointment.appointment_datetime"/>
+                        </td>
+                        <td>
+                            <span t-field="appointment.doctor_id.name"/>
+                        </td>
+                        <td>
+                            <span t-field="appointment.specialty_id.name"/>
+                        </td>
+                        <td>
+                            <span t-field="appointment.duration"/> mins
+                        </td>
+                        <td class="text-center">
+                            <!-- Dynamic Bootstrap Badges for Appointment Workflow States -->
+                            <span t-if="appointment.state == 'draft'" class="badge rounded-pill text-bg-secondary">
+                                Draft
+                            </span>
+                            <span t-if="appointment.state == 'confirmed'" class="badge rounded-pill text-bg-info">
+                                Confirmed
+                            </span>
+                            <span t-if="appointment.state == 'in_progress'" class="badge rounded-pill text-bg-primary">
+                                In Progress
+                            </span>
+                            <span t-if="appointment.state == 'done'" class="badge rounded-pill text-bg-success">
+                                Done
+                            </span>
+                            <span t-if="appointment.state == 'cancel'" class="badge rounded-pill text-bg-danger">
+                                Cancelled
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a t-attf-href="/my/appointments/#{appointment.id}" class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <!-- ==================================================================== -->
+    <!-- 4. PATIENT APPOINTMENT DETAIL PAGE                                   -->
+    <!-- ==================================================================== -->
+    <template id="portal_appointment_page" name="Appointment Details">
+        <t t-call="portal.portal_layout">
+            <div class="container py-3">
+                <!-- Header with Title & Status Badge -->
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <div>
+                        <h2 class="mb-0">
+                            Appointment <span class="text-primary" t-field="appointment.name"/>
+                        </h2>
+                        <small class="text-muted">
+                            Scheduled on <span t-field="appointment.appointment_datetime"/>
+                        </small>
+                    </div>
+                    <div>
+                        <span t-if="appointment.state == 'draft'" class="badge fs-6 rounded-pill text-bg-secondary">Draft</span>
+                        <span t-if="appointment.state == 'confirmed'" class="badge fs-6 rounded-pill text-bg-info">Confirmed</span>
+                        <span t-if="appointment.state == 'in_progress'" class="badge fs-6 rounded-pill text-bg-primary">In Progress</span>
+                        <span t-if="appointment.state == 'done'" class="badge fs-6 rounded-pill text-bg-success">Completed</span>
+                        <span t-if="appointment.state == 'cancel'" class="badge fs-6 rounded-pill text-bg-danger">Cancelled</span>
+                    </div>
+                </div>
+
+                <!-- Cancellation Alert Banner -->
+                <div t-if="appointment.state == 'cancel'" class="alert alert-danger mb-4" role="alert">
+                    <h5 class="alert-heading"><i class="fa fa-ban me-2"/> Appointment Cancelled</h5>
+                    <p class="mb-0" t-if="appointment.cancellation_reason">
+                        <strong>Reason:</strong> <t t-out="appointment.cancellation_reason"/>
+                    </p>
+                </div>
+
+                <!-- 2-Column Info Grid -->
+                <div class="row g-4 mb-4">
+                    <!-- Left Card: Doctor & Clinic Info -->
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm border-0 bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary border-bottom pb-2">
+                                    <i class="fa fa-user-md me-2"/> Consulting Doctor
+                                </h5>
+                                <div class="row mb-2">
+                                    <div class="col-4 text-muted fw-bold">Doctor:</div>
+                                    <div class="col-8" t-field="appointment.doctor_id.name"/>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-4 text-muted fw-bold">Specialty:</div>
+                                    <div class="col-8" t-field="appointment.specialty_id.name"/>
+                                </div>
+                                <div class="row mb-2" t-if="appointment.doctor_id.work_phone">
+                                    <div class="col-4 text-muted fw-bold">Contact:</div>
+                                    <div class="col-8" t-field="appointment.doctor_id.work_phone"/>
+                                </div>
+                                <div class="row mb-2" t-if="appointment.doctor_id.work_email">
+                                    <div class="col-4 text-muted fw-bold">Email:</div>
+                                    <div class="col-8" t-field="appointment.doctor_id.work_email"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Card: Appointment Schedule Details -->
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm border-0 bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary border-bottom pb-2">
+                                    <i class="fa fa-clock-o me-2"/> Schedule Details
+                                </h5>
+                                <div class="row mb-2">
+                                    <div class="col-5 text-muted fw-bold">Start Time:</div>
+                                    <div class="col-7" t-field="appointment.appointment_datetime"/>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 text-muted fw-bold">Estimated End:</div>
+                                    <div class="col-7" t-field="appointment.appointment_end_datetime"/>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 text-muted fw-bold">Duration:</div>
+                                    <div class="col-7"><span t-field="appointment.duration"/> minutes</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 text-muted fw-bold">Patient Name:</div>
+                                    <div class="col-7" t-field="appointment.patient_id.name"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes / Special Instructions Box -->
+                <div t-if="appointment.notes" class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted fw-bold">
+                            <i class="fa fa-file-text-o me-2"/> Patient Notes / Preparation Instructions:
+                        </h6>
+                        <p class="card-text mb-0" t-field="appointment.notes"/>
+                    </div>
+                </div>
+
+                <!-- Action Button Bar -->
+                <div class="d-flex justify-content-between">
+                    <a href="/my/appointments" class="btn btn-outline-secondary">
+                        <i class="fa fa-arrow-left me-1"/> Back to Appointments
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ==================================================================== -->
+    <!-- 5. PATIENT PRESCRIPTIONS LIST VIEW                                   -->
+    <!-- ==================================================================== -->
+    <template id="portal_my_prescriptions" name="My Prescriptions">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Prescriptions</t>
+            </t>
+
+            <!-- Empty State Alert -->
+            <t t-if="not prescriptions">
+                <div class="alert alert-info mt-3 d-flex align-items-center" role="alert">
+                    <i class="fa fa-medkit fa-2x me-3"/>
+                    <div>
+                        <h5 class="alert-heading mb-1">No Prescriptions Found</h5>
+                        <p class="mb-0">You currently have no medical prescriptions on file.</p>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Table of Prescriptions -->
+            <t t-if="prescriptions" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Prescription #</th>
+                        <th>Date</th>
+                        <th>Doctor</th>
+                        <th class="text-center">Medications</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="prescriptions" t-as="prescription">
+                        <td>
+                            <a t-attf-href="/my/prescriptions/#{prescription.id}">
+                                <strong t-field="prescription.name"/>
+                            </a>
+                        </td>
+                        <td>
+                            <span t-field="prescription.date"/>
+                        </td>
+                        <td>
+                            <span t-field="prescription.doctor_id.name"/>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill bg-light text-dark border">
+                                <t t-out="len(prescription.line_ids)"/> items
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span t-if="prescription.state == 'draft'" class="badge rounded-pill text-bg-secondary">
+                                Draft
+                            </span>
+                            <span t-if="prescription.state == 'confirmed'" class="badge rounded-pill text-bg-success">
+                                Confirmed
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a t-attf-href="/my/prescriptions/#{prescription.id}" class="btn btn-outline-primary">
+                                    Details
+                                </a>
+                                <a t-attf-href="/my/prescriptions/#{prescription.id}/pdf" class="btn btn-outline-secondary" title="Download PDF Prescription">
+                                    <i class="fa fa-download"/> PDF
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <!-- ==================================================================== -->
+    <!-- 6. PATIENT PRESCRIPTION DETAIL PAGE                                  -->
+    <!-- ==================================================================== -->
+    <template id="portal_prescription_page" name="Prescription Details">
+        <t t-call="portal.portal_layout">
+            <div class="container py-3">
+                <!-- Header with Action Button -->
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <div>
+                        <h2 class="mb-0">
+                            Prescription <span class="text-primary" t-field="prescription.name"/>
+                        </h2>
+                        <small class="text-muted">
+                            Issued on <span t-field="prescription.date"/> by <strong t-field="prescription.doctor_id.name"/>
+                        </small>
+                    </div>
+                    <div>
+                        <!-- Download PDF Button -->
+                        <a t-attf-href="/my/prescriptions/#{prescription.id}/pdf" class="btn btn-primary shadow-sm me-2">
+                            <i class="fa fa-download me-1"/> Download Official PDF
+                        </a>
+                        <span t-if="prescription.state == 'draft'" class="badge fs-6 rounded-pill text-bg-secondary">Draft</span>
+                        <span t-if="prescription.state == 'confirmed'" class="badge fs-6 rounded-pill text-bg-success">Confirmed</span>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary border-bottom pb-2">
+                                    <i class="fa fa-user me-2"/> Patient Details
+                                </h6>
+                                <p class="mb-1"><strong>Name:</strong> <span t-field="prescription.patient_id.name"/></p>
+                                <p class="mb-1"><strong>Patient Code:</strong> <span t-field="prescription.patient_id.patient_code"/></p>
+                                <p class="mb-0" t-if="prescription.patient_id.age">
+                                    <strong>Age:</strong> <span t-field="prescription.patient_id.age"/> yrs
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary border-bottom pb-2">
+                                    <i class="fa fa-user-md me-2"/> Prescribing Physician
+                                </h6>
+                                <p class="mb-1"><strong>Doctor:</strong> <span t-field="prescription.doctor_id.name"/></p>
+                                <p class="mb-1"><strong>Specialty:</strong> <span t-field="prescription.doctor_id.specialty_id.name"/></p>
+                                <p class="mb-0" t-if="prescription.doctor_id.license_number">
+                                    <strong>License #:</strong> <span t-field="prescription.doctor_id.license_number"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prescribed Medications Table -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0 text-primary">
+                            <i class="fa fa-pills me-2"/> Prescribed Medications (Rx)
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Medication Name</th>
+                                    <th>Dosage</th>
+                                    <th>Frequency</th>
+                                    <th>Duration</th>
+                                    <th>Special Instructions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="prescription.line_ids" t-as="line">
+                                    <td><t t-out="line_index + 1"/></td>
+                                    <td><strong t-field="line.medication_name"/></td>
+                                    <td><span class="badge text-bg-light border" t-field="line.dosage"/></td>
+                                    <td><span t-field="line.frequency"/></td>
+                                    <td><span t-field="line.duration"/></td>
+                                    <td><span class="text-muted fst-italic" t-field="line.notes"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Doctor's Advice Box -->
+                <div t-if="prescription.instructions" class="card shadow-sm border-0 mb-4">
+                    <div class="card-body bg-light border-start border-primary border-4 rounded">
+                        <h6 class="text-primary fw-bold mb-2">
+                            <i class="fa fa-stethoscope me-2"/> Doctor's Advice &amp; Dietary Guidelines:
+                        </h6>
+                        <p class="mb-0" t-field="prescription.instructions"/>
+                    </div>
+                </div>
+
+                <!-- Bottom Back Button -->
+                <div class="d-flex justify-content-between">
+                    <a href="/my/prescriptions" class="btn btn-outline-secondary">
+                        <i class="fa fa-arrow-left me-1"/> Back to Prescriptions
+                    </a>
+                    <a t-attf-href="/my/prescriptions/#{prescription.id}/pdf" class="btn btn-primary">
+                        <i class="fa fa-download me-1"/> Download PDF
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

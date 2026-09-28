@@ -2,7 +2,7 @@
 
 > **Odoo Version:** 19.0 Community / Enterprise  
 > **Module Name:** `clinic_management`  
-> **Status:** Active Development (Phase 6 next)
+> **Status:** Active Development (Phase 7 next — Final Phase!)
 
 ---
 
@@ -132,16 +132,40 @@ A complete clinic operations management system built natively in Odoo 19. It rep
 
 ---
 
-### ⏳ Phase 6: PDF Reports
-- [ ] Printable Prescription PDF: Clinic header, patient vitals, medication list with dosage instructions, doctor signature line.
-- [ ] Daily Doctor Schedule PDF.
+### ✅ Phase 6: PDF Reports (COMPLETED)
+- [x] Dedicated `report/` package for QWeb templating engine.
+- [x] **Printable Prescription PDF** (`clinic_management.report_prescription_document`):
+  - Official clinic letterhead wrapper (`web.external_layout`).
+  - Patient Information Card (Name, Code, Age, Blood Type, Allergies).
+  - Prescribing Doctor Card (Name, Specialty, License Number, Contact).
+  - Formatted Rx Medications Table with dosage, frequency, duration, instructions.
+  - Doctor's General Advice & Instructions box.
+  - Doctor's Signature & Medical Stamp line.
+  - 1-Click "Print Prescription" action button in form header + top Print menu.
+- [x] **Daily Doctor Schedule PDF** (`clinic_management.report_doctor_schedule_document`):
+  - Formatted timetable of appointments filtered by active status.
+  - Patient contact, vitals, time slots, and clinical notes.
+  - Bound directly to `clinic.doctor` Print menu.
 
 ---
 
-### ⏳ Phase 7: Patient Portal & REST API
-- [ ] Patient Web Portal: Accessible at `/my/appointments` and `/my/prescriptions`.
-- [ ] Portal Record Rules: Patients only see their own records (`patient_id.partner_id == user.partner_id`).
-- [ ] REST API: JSON endpoint at `/api/appointments` for external systems / reception kiosk.
+### ✅ Phase 7: Patient Portal & REST API (COMPLETED)
+- [x] **Patient Web Portal**:
+  - Live counter badges on `/my` dashboard via `_prepare_home_portal_values`.
+  - Accessible at `/my/appointments` (list view with status pills, pagination, and sorting).
+  - Appointment details view at `/my/appointments/<id>` (doctor info, time schedule, notes).
+  - Prescriptions list view at `/my/prescriptions` with medications count and status.
+  - Prescription details view at `/my/prescriptions/<id>` with full Rx table and doctor's advice.
+  - 1-Click PDF Prescription download at `/my/prescriptions/<id>/pdf` using Phase 6 QWeb report engine.
+- [x] **Strict Patient Record Scoping**:
+  - Row-level `ir.rule` security (`[('patient_id.partner_id', '=', user.partner_id.id)]`).
+  - Read access granted to `base.group_portal` for appointments, prescriptions, and `hr.employee.public`.
+  - Full data isolation: Patients can NEVER peek into another patient's medical records (verified with redirect).
+- [x] **REST API (`/api/v1`)**:
+  - `GET /api/v1/appointments`: JSON list with optional filtering by doctor, patient, date, or status.
+  - `GET /api/v1/appointments/<id>`: Detailed JSON view of single appointment.
+  - `POST /api/v1/appointments`: Validates JSON payload, creates appointment, and enforces overlap constraints with structured JSON errors (HTTP 400 vs 201).
+  - `GET /api/v1/doctors`: Doctor directory for reception kiosks.
 
 ---
 

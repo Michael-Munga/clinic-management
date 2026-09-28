@@ -50,6 +50,14 @@ class ClinicDoctor(models.Model):
     )
     biography = fields.Text(string='Biography')
 
+    # One2many relation connecting all appointments assigned to this doctor.
+    # Enables easy access in Python logic and QWeb report loops!
+    appointment_ids = fields.One2many(
+        'clinic.appointment',
+        'doctor_id',
+        string='Appointments',
+    )
+
     # Database-level unique constraint on doctor license number.
     _license_number_uniq = models.Constraint(
         'unique (license_number)',

@@ -77,6 +77,16 @@
                             invisible="state != 'cancel'"/>
 
                     <!-- 
+                        PHASE 6: PRINT DOCTOR SCHEDULE BUTTON
+                        Allows a doctor or receptionist to print the daily schedule PDF
+                        directly from the appointment screen!
+                    -->
+                    <button name="action_print_doctor_schedule" 
+                            string="Print Schedule" 
+                            type="object" 
+                            icon="fa-print"/>
+
+                    <!-- 
                         STATUSBAR: Renders the pipeline at top-right.
                         statusbar_visible: Which common states are always shown in the line.
                     -->

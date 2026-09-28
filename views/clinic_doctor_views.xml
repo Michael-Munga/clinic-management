@@ -21,6 +21,18 @@
         <field name="model">clinic.doctor</field>
         <field name="arch" type="xml">
             <form string="Doctor">
+                <header>
+                    <!-- 
+                        PHASE 6: DIRECT PRINT DAILY SCHEDULE BUTTON
+                        Allows clinic managers and receptionists to generate and download
+                        the doctor's appointment schedule PDF with a single click!
+                    -->
+                    <button name="%(clinic_management.action_report_doctor_schedule)d"
+                            string="Print Daily Schedule"
+                            type="action"
+                            class="btn-primary"
+                            icon="fa-print"/>
+                </header>
                 <sheet>
                     <!-- 
                         PHASE 4: DOCTOR SMART BUTTONS

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 
+        ========================================================================
+        PHASE 6: QWEB PRESCRIPTION PDF TEMPLATE
+        ========================================================================
+        QWeb Directives Explained:
+        - t-call="web.html_container": Initializes the Odoo HTML report wrapper.
+        - t-call="web.external_layout": Wraps the page with the company's official 
+          header (clinic logo, address) and footer (page numbers).
+        - t-foreach="docs" t-as="doc": Loops through each selected prescription record.
+          'docs' is the recordset passed by the report engine, and 'doc' is one record.
+        - t-field="doc.field_name": Formats and outputs a field value respecting user locale.
+        - t-if="condition": Conditionally renders HTML only if the field is not empty.
+        ========================================================================
+    -->
+    <template id="report_prescription_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <!-- 1. PRESCRIPTION TITLE & METADATA -->
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h2 class="text-primary font-weight-bold">MEDICAL PRESCRIPTION</h2>
+                                <p class="text-muted mb-0">
+                                    <strong>Reference:</strong> <span t-field="doc.name"/>
+                                </p>
+                            </div>
+                            <div class="col-4 text-end">
+                                <p class="mb-0">
+                                    <strong>Date:</strong> <span t-field="doc.date"/>
+                                </p>
+                                <p class="mb-0" t-if="doc.consultation_id">
+                                    <strong>Consultation:</strong> <span t-field="doc.consultation_id.name"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 2. PATIENT & PRESCRIBING DOCTOR INFORMATION CARDS -->
+                        <div class="row mb-4">
+                            <!-- Left Card: Patient Information -->
+                            <div class="col-6">
+                                <div class="border rounded p-3 bg-light">
+                                    <h5 class="text-secondary border-bottom pb-2 mb-2">Patient Information</h5>
+                                    <table class="table table-borderless table-sm mb-0">
+                                        <tr>
+                                            <td class="text-muted" style="width: 35%;"><strong>Name:</strong></td>
+                                            <td><span t-field="doc.patient_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted"><strong>Patient Code:</strong></td>
+                                            <td><span t-field="doc.patient_id.patient_code"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted"><strong>Age:</strong></td>
+                                            <td><span t-field="doc.patient_id.age"/> Years</td>
+                                        </tr>
+                                        <tr t-if="doc.patient_id.blood_type">
+                                            <td class="text-muted"><strong>Blood Type:</strong></td>
+                                            <td><span t-field="doc.patient_id.blood_type"/></td>
+                                        </tr>
+                                        <tr t-if="doc.patient_id.allergies">
+                                            <td class="text-danger"><strong>Allergies:</strong></td>
+                                            <td class="text-danger font-weight-bold"><span t-field="doc.patient_id.allergies"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Right Card: Prescribing Doctor Information -->
+                            <div class="col-6">
+                                <div class="border rounded p-3 bg-light">
+                                    <h5 class="text-secondary border-bottom pb-2 mb-2">Prescribing Doctor</h5>
+                                    <table class="table table-borderless table-sm mb-0">
+                                        <tr>
+                                            <td class="text-muted" style="width: 35%;"><strong>Doctor:</strong></td>
+                                            <td><span t-field="doc.doctor_id.name"/></td>
+                                        </tr>
+                                        <tr t-if="doc.doctor_id.specialty_id">
+                                            <td class="text-muted"><strong>Specialty:</strong></td>
+                                            <td><span t-field="doc.doctor_id.specialty_id.name"/></td>
+                                        </tr>
+                                        <tr t-if="doc.doctor_id.license_number">
+                                            <td class="text-muted"><strong>License No:</strong></td>
+                                            <td><span t-field="doc.doctor_id.license_number"/></td>
+                                        </tr>
+                                        <tr t-if="doc.doctor_id.work_phone">
+                                            <td class="text-muted"><strong>Work Phone:</strong></td>
+                                            <td><span t-field="doc.doctor_id.work_phone"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. PRESCRIBED MEDICATIONS TABLE -->
+                        <h5 class="text-primary mt-4 mb-2">Prescribed Medications (Rx)</h5>
+                        <table class="table table-sm table-striped border">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th style="width: 5%;">#</th>
+                                    <th style="width: 25%;">Medication</th>
+                                    <th style="width: 15%;">Dosage</th>
+                                    <th style="width: 20%;">Frequency</th>
+                                    <th style="width: 15%;">Duration</th>
+                                    <th style="width: 20%;">Instructions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- t-foreach loops through each medication line on the prescription -->
+                                <tr t-foreach="doc.line_ids" t-as="line">
+                                    <td><span t-esc="line_index + 1"/></td>
+                                    <td><strong><span t-field="line.medication_name"/></strong></td>
+                                    <td><span t-field="line.dosage"/></td>
+                                    <td><span t-field="line.frequency"/></td>
+                                    <td><span t-field="line.duration"/></td>
+                                    <td><span t-field="line.notes"/></td>
+                                </tr>
+                                <tr t-if="not doc.line_ids">
+                                    <td colspan="6" class="text-center text-muted">No medications entered.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- 4. ADVICE & INSTRUCTIONS -->
+                        <div class="mt-4 p-3 border rounded" t-if="doc.instructions">
+                            <h6 class="text-secondary font-weight-bold mb-2">Doctor's Advice / General Instructions</h6>
+                            <p class="mb-0" t-field="doc.instructions"/>
+                        </div>
+
+                        <!-- 5. DOCTOR SIGNATURE & STAMP BOX -->
+                        <div class="row mt-5 pt-4">
+                            <div class="col-6">
+                                <p class="text-muted small">
+                                    * Valid for 30 days from date of issue.<br/>
+                                    * Keep medicines out of reach of children.
+                                </p>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div style="display: inline-block; text-align: center; min-width: 220px;">
+                                    <div style="border-bottom: 2px solid #000; height: 50px; margin-bottom: 5px;"/>
+                                    <p class="mb-0 font-weight-bold"><span t-field="doc.doctor_id.name"/></p>
+                                    <p class="text-muted small mb-0">Doctor's Signature &amp; Medical Stamp</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
